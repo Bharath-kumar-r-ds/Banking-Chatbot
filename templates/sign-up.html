@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_log_sign.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo"></div>
+    </header>
+    <main>
+        <h1>Sign Up</h1>
+        <form id="signup-form" action="/signupp" method="POST">
+            <label for="fullname">Full Name:</label>
+            <input type="text" id="fullname" name="fullname" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="account_number">Username:</label>
+            <input type="text" id="account_number" name="account_number" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            
+            <label for="confirm-password">Confirm Password:</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
+            
+            <button type="submit" class="btn signup">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+    </main>
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const account_number = document.getElementById('account_number').value;
+          const password = document.getElementById('password').value;
+          const fullname = document.getElementById('fullname').value;
+          const email = document.getElementById('email').value;
+          const confirmpassword = document.getElementById('confirm-password').value;
+          
+          const response = await fetch('/sign-up', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_number, password, fullname, email, confirmpassword }),
+          });
+          
+          const result = await response.json();
+          alert(result.message);
+        });
+      </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles_log_sign.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo"></div>
+    </header>
+    <main>
+        <h1>Login</h1>
+        <form id="login-form" action="/loginn" method="POST">
+            <label for="account_number">Account Number:</label>
+            <input type="text" id="account_number" name="account_number" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit" class="btn login" id="login-button">Login</button>
+        </form>
+        <p>Don't have an account? <a href="sign-up.html">Sign Up</a></p>
+    </main>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const account_number = document.getElementById('account_number').value;
+          const password = document.getElementById('password').value;
+          
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_number, password }),
+          });
+          
+          if(response.ok){
+            sessionStorage.setItem('loggedIn', 'true');
+            window.location.href='/';
+          }else{
+            const result = await response.json();
+            alert(result.message);
+          }
+        });
+    </script>
+</body>
+</html>
+
+

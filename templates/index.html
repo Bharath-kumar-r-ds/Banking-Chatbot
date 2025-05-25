@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Banking Chatbot</title>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+        <img src="static/css/images/favicon-32x32.png" alt="Bank Icon" class="header-icon">
+        <h1 class="header-title">CAMbank</h1>
+        </div>
+        <div class="auth-buttons" id="auth-buttons">
+            <button class="btn login" id="login-button" onclick="location.href='login.html'">Login</button>
+            <button class="btn signup" id="signup-button" onclick="location.href='sign-up.html'">Sign Up</button>
+
+        </div>
+    </header>
+    <main>
+        <h1>Welcome to sCAMbank</h1>
+        <p>Click the chat button to start a conversation.</p>
+        <div class="button-container">
+            <button class="body-btn" onclick="window.location.href='account-details.html'">Account Details</button>
+            <button class="body-btn" onclick="window.location.href='transaction-history.html'">Transaction History</button>
+            <button class="body-btn" onclick="window.location.href='loan-details.html'">Loan Details</button>
+            <button class="body-btn" onclick="window.location.href='support.html'">Customer Support</button>
+        </div>
+    </main>
+    
+
+    
+    <button id="chat-widget-btn" class="chat-widget-btn">💬Chat</button>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="chat-modal hidden">
+        <div class="chat-header">
+            <button id="minimize-chat" class="control-btn">—</button>
+            <button id="close-chat" class="control-btn">X</button>
+            <h5>CHATBOT</h5>
+        </div>
+        <div id="chat-content" class="chat-content">
+            <div id="chat-messages" class="chat-box"></div>
+        </div>
+        <div class="chat-footer">
+            <input id="user-input" type="text" placeholder="Type your message..." />
+            <button id="send-button" class="send-message-btn">Send</button>
+        </div>
+    </div>
+    <!-- <div class="chat-container">
+        <h1>Banking Chatbot</h1>
+        <div id="chat-box" class="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message here..." />
+        <button id="send-button">Send</button>
+    </div> -->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        window.onload = function() {
+            // Check if the user was redirected from the login page
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                document.getElementById('login-button').style.display = 'none';    
+                document.getElementById('signup-button').style.display = 'none'; 
+            }
+            sessionStorage.removeItem('loggedIn');
+        }
+        // DOM Elements
+        const chatWidgetBtn = document.getElementById("chat-widget-btn");
+        const chatModal = document.getElementById("chat-modal");
+        const closeChatBtn = document.getElementById("close-chat");
+        const minimizeChatBtn = document.getElementById("minimize-chat");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatInput = document.getElementById("user-input");
+        const sendMessageBtn = document.getElementById("send-button");
+
+        // Open Chat Modal
+        chatWidgetBtn.addEventListener("click", () => {
+            chatModal.classList.remove("hidden");
+        });
+        
+        // Close Chat Modal
+        closeChatBtn.addEventListener("click", () => {
+            chatModal.classList.add("hidden");
+            chatMessages.innerHTML = ""; // Clear messages on close
+        });
+
+        // Minimize Chat Modal
+        minimizeChatBtn.addEventListener("click", () => {
+            chatModal.classList.add("hidden");
+        });
+
+        $(document).ready(function() {
+            $('#send-button').click(function() {
+                var userInput = $('#user-input').val();
+                if (userInput.trim() === "") return; // Prevent sending empty messages
+
+                function addMessage(sender, text) {
+                    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = `message ${sender}`;
+                    messageDiv.setAttribute("data-timestamp", timestamp);
+                    messageDiv.textContent = text;
+                    messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to latest message
+                }
+
+                // Append user's message to chat box
+                addMessage('user',userInput);
+                $('#user-input').val(''); // Clear input field
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: userInput }),
+                    success: function(data) {
+                        // Append bot's response to chat box
+                        addMessage('bot', data.response);
+
+                        // ** NEW CODE STARTS HERE **
+                        // Check for logout response
+                        if (userInput.toLowerCase() === "logout") {
+                            // Clear chat box and disable input
+                            addMessage('bot', 'Session ended. Please refresh to log back in.');
+                            $('#user-input').prop('disabled', true); // Disable input field
+                            $('#send-button').prop('disabled', true); // Disable send button
+                        }
+                        // ** NEW CODE ENDS HERE **
+                    },
+                    error: function(error) {
+                        console.log("Error:", error);
+                    }
+                });
+            });
+
+            // Optional: Send message on Enter key press
+            $('#user-input').keypress(function(event) {
+                if (event.which === 13) {
+                    $('#send-button').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
